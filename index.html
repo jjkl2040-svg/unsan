@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모바일 예배순서지</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- 카카오톡 SDK 추가 -->
+  <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    .asterisk { color: #e53e3e; font-weight: bold; margin-right: 2px; }
+    /* PC 반응형: 모바일 디자인은 유지하고 PC에서는 화면을 넓게 사용 */
+    @media (min-width: 768px) {
+      body {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+      main {
+        padding-left: 32px !important;
+        padding-right: 32px !important;
+      }
+      #worshipList {
+        font-size: 16px;
+      }
+      #worshipList > div {
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+      }
+      #leaderInfoContainer {
+        font-size: 14px !important;
+      }
+      footer {
+        padding: 18px 24px !important;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      body {
+        padding-left: 40px;
+        padding-right: 40px;
+      }
+      main {
+        padding-left: 44px !important;
+        padding-right: 44px !important;
+      }
+      #worshipList > div {
+        padding-top: 14px !important;
+        padding-bottom: 14px !important;
+      }
+    }
+  </style>
+
+<style>
+#sharedSavePanel.hidden { display:none !important; }
+</style>
+
+</head>
+<body class="bg-gray-100 min-h-screen pb-12">
+
+  <div class="w-full max-w-md md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto bg-white min-h-screen md:min-h-0 md:my-6 md:rounded-xl md:shadow-xl flex flex-col">
+    <!-- 헤더 -->
+    <header class="bg-slate-800 text-white p-4 text-center relative">
+      <h1 class="text-xl font-bold tracking-wide">예 배 순 서</h1>
+      <p class="text-xs text-gray-300 mt-1">오후 예배에도 하나님은 여러분을 기다리십니다.</p>
+      
+      <div class="flex justify-center gap-2 mt-3">
+        <!-- 카카오톡 공유 버튼 -->
+        <button onclick="shareKakao()" class="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xs font-bold rounded-full shadow transition-all flex items-center gap-1">
+          <i class="fa-solid fa-comment"></i> 카톡 공유
+        </button>
+
+        <!-- 편집/잠금 전환 버튼 -->
+        <button id="toggleEditBtn" onclick="handleEditAuth()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-full shadow transition-all flex items-center gap-1">
+          <i class="fa-solid fa-lock" id="lockIcon"></i> <span id="editBtnText">관리자</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 예배/소식 탭 메뉴 -->
+    <nav class="flex border-b border-gray-200 bg-slate-50 text-xs font-medium text-center">
+      <button onclick="switchTab('day')" id="tab-day" class="flex-1 py-3 border-b-2 border-blue-600 font-bold text-blue-600">주일낮예배</button>
+      <button onclick="switchTab('praise')" id="tab-praise" class="flex-1 py-3 border-b-2 border-transparent text-gray-500">주일찬양예배</button>
+      <button onclick="switchTab('wed')" id="tab-wed" class="flex-1 py-3 border-b-2 border-transparent text-gray-500">수요밤예배</button>
+      <button onclick="switchTab('news')" id="tab-news" class="flex-1 py-3 border-b-2 border-transparent text-gray-500">교회소식</button>
+    </nav>
+
+    <!-- 안내 메시지 (편집 모드 시 출력) -->
+    
+<!-- 공유 저장 안내 -->
+<div id="sharedSavePanel" class="hidden mx-4 mt-4 rounded-xl border border-green-200 bg-green-50 p-4">
+  <div class="font-bold text-green-800 mb-1">☁️ 교회 공용 예배순서</div>
+  <div class="text-sm text-green-700 leading-relaxed">
+    현재 파일은 먼저 <b>브라우저 간 공유가 가능한 구조</b>로 준비되어 있습니다.
+    아래의 「공용 데이터 내보내기」로 관리자 설정을 파일로 저장하고,
+    다른 기기에서는 「공용 데이터 가져오기」로 같은 예배순서를 불러올 수 있습니다.
+  </div>
+  <div class="flex flex-wrap gap-2 mt-3">
+    <button onclick="exportSharedData()" class="px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-semibold">
+      ☁️ 공용 데이터 내보내기
+    </button>
+    <label class="px-3 py-2 rounded-lg bg-white border border-green-300 text-green-800 text-sm font-semibold cursor-pointer">
+      📥 공용 데이터 가져오기
+      <input type="file" id="sharedDataFile" accept=".json,application/json" class="hidden" onchange="importSharedData(event)">
+    </label>
+  </div>
+</div>
+
+<div id="editNotice" class="hidden bg-amber-50 p-3 text-xs text-amber-800 border-b border-amber-200">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span>✏️ 집례자 정보 및 순서를 수정한 뒤 완료를 누르세요.</span>
+        <button onclick="resetData()" class="text-red-500 underline text-[11px]">초기화</button>
+      </div>
+
+      <!-- 예배순서 설정 저장/불러오기 -->
+      <div class="mt-3 pt-3 border-t border-amber-200 flex flex-wrap gap-2 items-center">
+        <button onclick="savePreset()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs shadow">
+          💾 현재 설정 저장
+        </button>
+
+        <select id="presetSelect" class="flex-1 min-w-[180px] p-2 border border-amber-300 rounded-lg bg-white text-gray-700 text-xs">
+          <option value="">저장된 설정 선택</option>
+        </select>
+
+        <button onclick="loadPreset()" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-xs shadow">
+          📂 불러오기
+        </button>
+
+        <button onclick="deletePreset()" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-xs shadow">
+          🗑 삭제
+        </button>
+      </div>
+      <p class="mt-2 text-[11px] text-amber-700">
+        ※ 예배순서·집례자 정보를 이름별로 여러 개 저장해 두었다가 필요할 때 다시 불러올 수 있습니다.
+      </p>
+    </div>
+
+    <!-- 순서 리스트 영역 -->
+    <main class="flex-1 p-4">
+      <!-- 집례자 정보 영역 -->
+      <div id="leaderInfoContainer" class="text-right text-xs text-gray-600 font-medium mb-4 pb-2 border-b border-gray-100">
+        <!-- JS로 동적 생성 -->
+      </div>
+
+      <!-- 순서 목록 -->
+      <div id="worshipList" class="space-y-3">
+        <!-- JS로 동적 생성 -->
+      </div>
+
+      <!-- 순서 추가 버튼 (편집 모드에서만 표시) -->
+      <button id="addBtn" onclick="addItem()" class="hidden w-full mt-6 py-3 border-2 border-dashed border-blue-400 text-blue-600 rounded-lg font-bold text-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2">
+        <i class="fa-solid fa-plus"></i> 새로운 순서 추가하기
+      </button>
+    </main>
+
+    <!-- 하단 문구 -->
+    <footer class="p-4 text-center text-xs text-gray-400 border-t border-gray-100">
+      ⇧ 오후 예배에도 하나님은 여러분을 기다리십니다. ⇧
+    </footer>
+  </div>
+
+  <script>
+    const SECRET_PIN = "8597"; // 비밀번호
+
+    // 카카오 SDK 초기화
+    if (window.Kakao && !Kakao.isInitialized()) {
+      Kakao.init('c089c8172def97eb00c07217cae17495');
+    }
+
+    const defaultLeaders = {
+      day: "김규세 목사",
+      praise: "담임목사",
+      wed: "담임목사"
+    };
+
+    const defaultData = {
+      day: [
+        { id: 1, isStand: false, title: "조용한기도", content: "", person: "글로리아찬양대" },
+        { id: 2, isStand: false, title: "예배의부름", content: "시 19:1, 4", person: "집례자" },
+        { id: 3, isStand: true,  title: "경배찬송", content: "19장", person: "다같이" },
+        { id: 4, isStand: true,  title: "신앙고백", content: "사도신경", person: "다같이" },
+        { id: 5, isStand: true,  title: "교독문", content: "12번", person: "다같이" },
+        { id: 6, isStand: true,  title: "찬송", content: "92장", person: "다같이" },
+        { id: 7, isStand: false, title: "기도", content: "", person: "1부 / 조규신장로\n2부 / 김혜정장로" },
+        { id: 8, isStand: false, title: "응답송", content: "", person: "글로리아찬양대" },
+        { id: 9, isStand: false, title: "성경봉독", content: "창세기 32장 24-31절 (p49)", person: "집례자" },
+        { id: 10, isStand: false, title: "찬양", content: "", person: "글로리아찬양대" },
+        { id: 11, isStand: false, title: "설교", content: "\"앏복강의 씨름\"", person: "김규세 목사" },
+        { id: 12, isStand: false, title: "기도", content: "", person: "집례자" },
+        { id: 13, isStand: false, title: "헌금찬송", content: "322장", person: "다같이" },
+        { id: 14, isStand: false, title: "봉헌기도", content: "", person: "집례자" },
+        { id: 15, isStand: false, title: "교회소식", content: "", person: "집례자" },
+        { id: 16, isStand: false, title: "성찬예식", content: "보좌 1부: 허정근장로\n보좌 2부: 이근섭장로, 조규동장로", person: "집례자" },
+        { id: 17, isStand: true,  title: "찬송", content: "227장 / 주 앞에 성찬받기 4,5절", person: "다같이" },
+        { id: 18, isStand: true,  title: "축도", content: "", person: "김규세 목사" },
+        { id: 19, isStand: true,  title: "폐회", content: "", person: "다같이" }
+      ],
+      praise: [
+        { id: 1, isStand: false, title: "찬양", content: "경배와 찬양", person: "찬양팀" },
+        { id: 2, isStand: false, title: "기도", content: "", person: "담당자" },
+        { id: 3, isStand: false, title: "성경봉독", content: "말씀 구절", person: "집례자" },
+        { id: 4, isStand: false, title: "설교", content: "말씀 제목", person: "담임목사" },
+        { id: 5, isStand: true,  title: "축도", content: "", person: "담임목사" }
+      ],
+      wed: [
+        { id: 1, isStand: false, title: "찬송", content: "찬송가", person: "다같이" },
+        { id: 2, isStand: false, title: "기도", content: "", person: "담당자" },
+        { id: 3, isStand: false, title: "성경봉독", content: "말씀 구절", person: "집례자" },
+        { id: 4, isStand: false, title: "설교", content: "말씀 제목", person: "담임목사" }
+      ],
+      news: [
+        { id: 1, isStand: false, title: "예배 안내", content: "현장 예배 및 온라인 생중계가 함께 드려집니다.", person: "교회" },
+        { id: 2, isStand: false, title: "모임 소식", content: "각 기관별 남/여선교회 모임이 있습니다.", person: "교회" }
+      ]
+    };
+
+    let currentTab = 'day';
+    let isEditMode = false;
+    let data;
+    let leaders;
+
+    // 데이터 복구 및 불러오기
+    try {
+      const saved = localStorage.getItem('worship_data_v11');
+      const savedLeaders = localStorage.getItem('worship_leaders_v11');
+      
+      data = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultData));
+      leaders = savedLeaders ? JSON.parse(savedLeaders) : JSON.parse(JSON.stringify(defaultLeaders));
+      
+      if (!data || !data.day) data = JSON.parse(JSON.stringify(defaultData));
+      if (!leaders) leaders = JSON.parse(JSON.stringify(defaultLeaders));
+    } catch (e) {
+      data = JSON.parse(JSON.stringify(defaultData));
+      leaders = JSON.parse(JSON.stringify(defaultLeaders));
+    }
+
+    function saveData() {
+      localStorage.setItem('worship_data_v11', JSON.stringify(data));
+      localStorage.setItem('worship_leaders_v11', JSON.stringify(leaders));
+      render();
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('nav button').forEach(btn => {
+        btn.className = "flex-1 py-3 border-b-2 border-transparent text-gray-500 font-medium";
+      });
+      document.getElementById(`tab-${tab}`).className = "flex-1 py-3 border-b-2 border-blue-600 font-bold text-blue-600";
+      render();
+    }
+
+    function handleEditAuth() {
+      if (isEditMode) {
+        toggleEditMode(false);
+      } else {
+        const inputPin = prompt("수정 권한이 필요합니다.\n비밀번호 4자리를 입력하세요:");
+        if (inputPin === SECRET_PIN) {
+          toggleEditMode(true);
+        } else if (inputPin !== null) {
+          alert("비밀번호가 올바르지 않습니다.");
+        }
+      }
+    }
+
+    function toggleEditMode(enable) {
+      isEditMode = enable;
+      const btnText = document.getElementById('editBtnText');
+      const lockIcon = document.getElementById('lockIcon');
+      const editNotice = document.getElementById('editNotice');
+      const addBtn = document.getElementById('addBtn');
+
+      if (isEditMode) {
+        btnText.innerText = "✓ 편집 완료";
+        lockIcon.className = "fa-solid fa-unlock";
+        editNotice.classList.remove('hidden');
+        addBtn.classList.remove('hidden');
+      } else {
+        btnText.innerText = "순서 편집 (비번 필요)";
+        lockIcon.className = "fa-solid fa-lock";
+        editNotice.classList.add('hidden');
+        addBtn.classList.add('hidden');
+      }
+      updatePresetSelect();
+      render();
+    }
+
+    function updateLeader(value) {
+      leaders[currentTab] = value;
+      saveData();
+    }
+
+    function render() {
+      // 1. 집례자 영역 렌더링
+      const leaderContainer = document.getElementById('leaderInfoContainer');
+      if (currentTab === 'news') {
+        leaderContainer.style.display = 'none';
+      } else {
+        leaderContainer.style.display = 'block';
+        if (isEditMode) {
+          leaderContainer.innerHTML = `
+            <div class="flex items-center justify-end gap-2 bg-amber-50 p-2 rounded border border-amber-200">
+              <span class="font-bold text-amber-900">집례자 이름:</span>
+              <input type="text" value="${leaders[currentTab] || ''}" onchange="updateLeader(this.value)" placeholder="예: 김규세 목사" class="p-1 border rounded text-xs w-36 text-right font-semibold">
+            </div>
+          `;
+        } else {
+          leaderContainer.innerHTML = `집례: ${leaders[currentTab] || ''}`;
+        }
+      }
+
+      // 2. 예배 순서 렌더링
+      const listEl = document.getElementById('worshipList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      const currentList = (data && data[currentTab]) ? data[currentTab] : [];
+
+      currentList.forEach((item, index) => {
+        const itemEl = document.createElement('div');
+
+        if (isEditMode) {
+          itemEl.className = "p-3 bg-amber-50/60 rounded-lg border border-amber-200 space-y-2 text-xs";
+          itemEl.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <label class="flex items-center gap-1 font-bold text-amber-900 cursor-pointer">
+                <input type="checkbox" ${item.isStand ? 'checked' : ''} onchange="updateItem(${index}, 'isStand', this.checked)"> ※ 일어섬
+              </label>
+              <div class="flex gap-1">
+                <button onclick="moveItem(${index}, -1)" class="px-2 py-1 bg-gray-200 text-gray-700 rounded">▲</button>
+                <button onclick="moveItem(${index}, 1)" class="px-2 py-1 bg-gray-200 text-gray-700 rounded">▼</button>
+                <button onclick="deleteItem(${index})" class="px-2 py-1 bg-red-500 text-white rounded">삭제</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" value="${item.title || ''}" onchange="updateItem(${index}, 'title', this.value)" placeholder="순서명" class="p-1.5 border rounded font-bold w-full">
+              <textarea onchange="updateItem(${index}, 'content', this.value)" placeholder="내용" class="p-1.5 border rounded w-full h-12">${item.content || ''}</textarea>
+              <textarea onchange="updateItem(${index}, 'person', this.value)" placeholder="담당자" class="p-1.5 border rounded w-full h-12">${item.person || ''}</textarea>
+            </div>
+          `;
+        } else {
+          itemEl.className = "flex items-center justify-between py-2 border-b border-gray-100 text-sm";
+          
+          const titleHtml = `<div class="w-1/4 font-semibold text-gray-800 whitespace-nowrap">${item.isStand ? '<span class="asterisk">※</span>' : ''}${item.title || ''}</div>`;
+          const contentHtml = `<div class="w-2/4 text-center font-medium text-gray-700 px-1 whitespace-pre-line leading-snug">${item.content || ''}</div>`;
+          const personHtml = `<div class="w-1/4 text-right text-xs text-gray-500 whitespace-pre-line leading-tight">${item.person || ''}</div>`;
+
+          itemEl.innerHTML = titleHtml + contentHtml + personHtml;
+        }
+
+        listEl.appendChild(itemEl);
+      });
+    }
+
+    function updateItem(index, key, value) {
+      data[currentTab][index][key] = value;
+      saveData();
+    }
+
+    function addItem() {
+      if (!data[currentTab]) data[currentTab] = [];
+      data[currentTab].push({
+        id: Date.now(),
+        isStand: false,
+        title: "새 순서",
+        content: "",
+        person: ""
+      });
+      saveData();
+    }
+
+    function deleteItem(index) {
+      if (confirm("이 순서를 삭제하시겠습니까?")) {
+        data[currentTab].splice(index, 1);
+        saveData();
+      }
+    }
+
+    function moveItem(index, direction) {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= data[currentTab].length) return;
+      const temp = data[currentTab][index];
+      data[currentTab][index] = data[currentTab][targetIndex];
+      data[currentTab][targetIndex] = temp;
+      saveData();
+    }
+
+    // 저장된 예배순서 설정 목록
+    const PRESET_STORAGE_KEY = 'worship_presets_v12';
+
+    function getPresets() {
+      try {
+        return JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function updatePresetSelect() {
+      const select = document.getElementById('presetSelect');
+      if (!select) return;
+
+      const presets = getPresets();
+      const currentValue = select.value;
+
+      select.innerHTML = '<option value="">저장된 설정 선택</option>';
+
+      Object.keys(presets).sort().forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+
+      if (presets[currentValue]) select.value = currentValue;
+    }
+
+    function savePreset() {
+      const name = prompt(
+        "저장할 설정 이름을 입력하세요.\n예: 2026년 성탄절 예배, 추수감사주일, 평소 주일예배"
+      );
+
+      if (name === null) return;
+
+      const presetName = name.trim();
+      if (!presetName) {
+        alert("설정 이름을 입력해주세요.");
+        return;
+      }
+
+      const presets = getPresets();
+
+      if (presets[presetName]) {
+        const overwrite = confirm(
+          `"${presetName}" 설정이 이미 있습니다.\n현재 예배순서로 덮어쓰시겠습니까?`
+        );
+        if (!overwrite) return;
+      }
+
+      presets[presetName] = {
+        data: JSON.parse(JSON.stringify(data)),
+        leaders: JSON.parse(JSON.stringify(leaders)),
+        savedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+      updatePresetSelect();
+
+      const select = document.getElementById('presetSelect');
+      if (select) select.value = presetName;
+
+      alert(`"${presetName}" 설정이 저장되었습니다.`);
+    }
+
+    function loadPreset() {
+      const select = document.getElementById('presetSelect');
+      const presetName = select ? select.value : '';
+
+      if (!presetName) {
+        alert("불러올 설정을 먼저 선택해주세요.");
+        return;
+      }
+
+      const presets = getPresets();
+      const preset = presets[presetName];
+
+      if (!preset || !preset.data) {
+        alert("저장된 설정을 찾을 수 없습니다.");
+        updatePresetSelect();
+        return;
+      }
+
+      if (!confirm(
+        `"${presetName}" 설정을 불러오시겠습니까?\n현재 화면의 예배순서가 저장된 설정으로 바뀝니다.`
+      )) return;
+
+      data = JSON.parse(JSON.stringify(preset.data));
+      leaders = JSON.parse(JSON.stringify(preset.leaders || defaultLeaders));
+
+      // 현재 사용 중인 설정에도 즉시 반영
+      localStorage.setItem('worship_data_v11', JSON.stringify(data));
+      localStorage.setItem('worship_leaders_v11', JSON.stringify(leaders));
+
+      render();
+      alert(`"${presetName}" 설정을 불러왔습니다.`);
+    }
+
+    function deletePreset() {
+      const select = document.getElementById('presetSelect');
+      const presetName = select ? select.value : '';
+
+      if (!presetName) {
+        alert("삭제할 설정을 먼저 선택해주세요.");
+        return;
+      }
+
+      if (!confirm(`"${presetName}" 저장 설정을 삭제하시겠습니까?`)) return;
+
+      const presets = getPresets();
+      delete presets[presetName];
+      localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+
+      updatePresetSelect();
+      alert(`"${presetName}" 설정이 삭제되었습니다.`);
+    }
+
+    function resetData() {
+      if (confirm("초기 순서 및 집례자 정보로 되돌리시겠습니까?")) {
+        data = JSON.parse(JSON.stringify(defaultData));
+        leaders = JSON.parse(JSON.stringify(defaultLeaders));
+        saveData();
+      }
+    }
+
+    // 카카오톡 공유 기능
+    function shareKakao() {
+      const siteUrl = window.location.href;
+
+      if (window.Kakao && Kakao.isInitialized()) {
+        Kakao.Link.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: '모바일 예배순서지',
+            description: '오늘의 예배 순서와 교회 소식을 확인하세요.',
+            imageUrl: 'https://cdn-icons-png.flaticon.com/512/2991/2991148.png',
+            link: {
+              mobileWebUrl: siteUrl,
+              webUrl: siteUrl,
+            },
+          },
+          buttons: [
+            {
+              title: '예배순서 보기',
+              link: {
+                mobileWebUrl: siteUrl,
+                webUrl: siteUrl,
+              },
+            },
+          ],
+        });
+      } else {
+        navigator.clipboard.writeText(siteUrl).then(() => {
+          alert("주소가 복사되었습니다. 카카오톡 채팅창에 붙여넣기 하세요.");
+        }).catch(() => {
+          alert("현재 주소: " + siteUrl);
+        });
+      }
+    }
+
+    window.onload = function() {
+      updatePresetSelect();
+      render();
+    };
+  </script>
+
+<script>
+/*
+ * 운산교회 공용 예배순서 - 1단계 공유 저장
+ * -----------------------------------------
+ * 이 버전은 서버 없이도 관리자 PC에서 만든 설정을 JSON 파일로 내보내고,
+ * 교인 기기에서 같은 파일을 가져와 동일한 예배순서를 볼 수 있게 합니다.
+ *
+ * 다음 단계에서는 이 부분을 Firebase/Supabase 등의 온라인 DB로 교체하면
+ * "관리자 저장 → 모든 휴대폰 자동 반영" 구조로 확장할 수 있습니다.
+ */
+
+function openSharedSavePanel() {
+  const panel = document.getElementById('sharedSavePanel');
+  if (panel) panel.classList.toggle('hidden');
+}
+
+function exportSharedData() {
+  try {
+    const shared = {
+      version: 1,
+      church: "운산교회",
+      exportedAt: new Date().toISOString(),
+      data: typeof data !== "undefined" ? data : {},
+      leaders: typeof leaders !== "undefined" ? leaders : {}
+    };
+
+    const blob = new Blob(
+      [JSON.stringify(shared, null, 2)],
+      { type: "application/json;charset=utf-8" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `운산교회_예배순서_${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    alert("공용 예배순서 파일이 저장되었습니다.\n이 파일을 교인 기기에서 가져오면 같은 예배순서를 사용할 수 있습니다.");
+  } catch (e) {
+    console.error(e);
+    alert("공용 데이터 저장 중 오류가 발생했습니다.");
+  }
+}
+
+function importSharedData(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      const shared = JSON.parse(e.target.result);
+
+      if (!shared || shared.church !== "운산교회" || !shared.data) {
+        throw new Error("운산교회 예배순서 데이터가 아닙니다.");
+      }
+
+      if (!confirm(
+        "공용 예배순서를 현재 기기에 적용하시겠습니까?\\n\\n" +
+        "현재 기기에 저장된 예배순서 설정은 공용 데이터로 덮어씌워집니다."
+      )) {
+        event.target.value = "";
+        return;
+      }
+
+      data = shared.data || {};
+      leaders = shared.leaders || {};
+
+      localStorage.setItem("worship_data_v11", JSON.stringify(data));
+      localStorage.setItem("worship_leaders_v11", JSON.stringify(leaders));
+
+      if (typeof render === "function") render();
+      if (typeof updatePresetSelect === "function") updatePresetSelect();
+
+      alert("공용 예배순서를 불러왔습니다.");
+    } catch (err) {
+      console.error(err);
+      alert("파일을 읽을 수 없습니다.\n올바른 운산교회 예배순서 파일인지 확인해주세요.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  reader.readAsText(file, "utf-8");
+}
+
+/* 관리자 버튼을 눌렀을 때 공유 저장 메뉴도 함께 표시 */
+document.addEventListener("DOMContentLoaded", function() {
+  const adminButton = Array.from(document.querySelectorAll("button")).find(
+    b => b.textContent && b.textContent.includes("관리자")
+  );
+
+  if (adminButton) {
+    adminButton.addEventListener("click", function() {
+      setTimeout(function() {
+        const panel = document.getElementById("sharedSavePanel");
+        if (panel && !panel.classList.contains("hidden")) return;
+        if (panel && typeof toggleEditMode === "function") {
+          // 관리자 화면에 들어간 뒤 공유 패널 표시
+          panel.classList.remove("hidden");
+        }
+      }, 100);
+    });
+  }
+});
+</script>
+
+</body>
+</html>
