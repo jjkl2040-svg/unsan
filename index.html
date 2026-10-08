@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>운산교회 모바일 예배순서지</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* 전체 화면 스크롤이 정상 동작하도록 CSS 초기화 */
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      margin: 0;
+      padding: 0;
+    }
+    .asterisk { color: #e53e3e; font-weight: bold; margin-right: 2px; }
+  </style>
+</head>
+<body class="bg-gray-100 py-0 md:py-6 text-gray-800">
+
+  <!-- 메인 용지 카드 -->
+  <div class="w-full max-w-lg md:max-w-2xl mx-auto bg-white md:rounded-2xl md:shadow-xl my-0 md:my-6 pb-6">
+    
+    <!-- 상단 헤더 -->
+    <header class="bg-slate-800 text-white p-5 text-center relative shadow-md">
+      <h1 class="text-xl font-bold tracking-tight">운산교회 예배</h1>
+      <p class="text-xs text-slate-300 mt-1">2026년 10월 4일</p>
+      
+      <div class="flex justify-center gap-2 mt-3">
+        <button id="toggleEditBtn" onclick="handleEditAuth()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-full shadow-sm transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-lock" id="lockIcon"></i>
+          <span id="editBtnText">관리자</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 탭 메뉴 -->
+    <nav class="flex border-b border-gray-200 bg-slate-50 text-xs font-medium text-center">
+      <button type="button" onclick="switchTab('day')" id="tab-day" class="flex-1 py-3.5 border-b-2 border-blue-600 font-bold text-blue-600">주일낮예배</button>
+      <button type="button" onclick="switchTab('praise')" id="tab-praise" class="flex-1 py-3.5 border-b-2 border-transparent text-gray-500">주일찬양예배</button>
+      <button type="button" onclick="switchTab('wed')" id="tab-wed" class="flex-1 py-3.5 border-b-2 border-transparent text-gray-500">수요밤예배</button>
+      <button type="button" onclick="switchTab('news')" id="tab-news" class="flex-1 py-3.5 border-b-2 border-transparent text-gray-500">교회소식</button>
+    </nav>
+
+    <!-- 관리자 배포 안내 패널 -->
+    <div id="adminPanel" class="hidden bg-amber-50 p-4 text-xs text-amber-900 border-b border-amber-200 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="font-bold">✏️ 예배순서 편집 모드</span>
+        <button type="button" onclick="downloadGithubData()" class="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded font-bold shadow-sm flex items-center gap-1">
+          <i class="fa-solid fa-download"></i> ☁️ worship_data.json 다운로드
+        </button>
+      </div>
+      <p class="text-[11px] text-amber-700 leading-relaxed">
+        ※ 수정 후 위 버튼을 눌러 다운로드된 <b>worship_data.json</b> 파일을 GitHub 저장소에 올리시면 접속하는 모든 교인 핸드폰에 동일하게 반영됩니다.
+      </p>
+    </div>
+
+    <!-- 순서 리스트 메인 영역 -->
+    <main class="p-5">
+      <!-- 집례자 표기 -->
+      <div id="leaderInfoContainer" class="text-right text-xs text-gray-500 font-medium mb-4 pb-2 border-b border-gray-100"></div>
+      
+      <!-- 리스트 출력 영역 -->
+      <div id="worshipList" class="divide-y divide-gray-100"></div>
+
+      <!-- 순서 추가 버튼 -->
+      <button type="button" id="addBtn" onclick="addItem()" class="hidden w-full mt-6 py-2.5 border-2 border-dashed border-blue-400 text-blue-600 rounded-lg font-semibold text-xs hover:bg-blue-50 flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-plus"></i> 새로운 순서 추가하기
+      </button>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="py-4 text-center text-xs text-gray-400 border-t border-gray-100 bg-slate-50/50 mt-6">
+      ⇧ 하나님은 여러분을 기다리십니다. ⇧
+    </footer>
+  </div>
+
+  <script>
+    var SECRET_PIN = "8597";
+    var currentTab = 'day';
+    var isEditMode = false;
+
+    // 기본 데이터 정의
+    var mainData = {
+      leaders: {
+        day: "김규세 목사",
+        praise: "김규세 목사",
+        wed: "김규세 목사"
+      },
+      data: {
+        day: [
+          { id: 1, isStand: false, title: "조용한기도", content: "…………………………", person: "글로리아찬양대" },
+          { id: 2, isStand: false, title: "예배의부름", content: "시 19:1, 4", person: "집례자" },
+          { id: 3, isStand: true,  title: "경배찬송", content: "19장", person: "다같이" },
+          { id: 4, isStand: true,  title: "신앙고백", content: "사도신경", person: "다같이" },
+          { id: 5, isStand: true,  title: "교독문", content: "12번", person: "다같이" },
+          { id: 6, isStand: true,  title: "찬송", content: "92장", person: "다같이" },
+          { id: 7, isStand: false, title: "기도", content: "…………………………", person: "1부 / 조규신장로\n2부 / 김혜정장로" },
+          { id: 8, isStand: false, title: "응답송", content: "…………………………", person: "글로리아찬양대" },
+          { id: 9, isStand: false, title: "성경봉독", content: "창세기 32장 24-31절 (p49)", person: "집례자" },
+          { id: 10, isStand: false, title: "찬양", content: "…………………………", person: "글로리아찬양대" },
+          { id: 11, isStand: false, title: "설교", content: "\"앏복강의 씨름\"", person: "김규세 목사" },
+          { id: 12, isStand: false, title: "기도", content: "…………………………", person: "집례자" },
+          { id: 13, isStand: false, title: "헌금찬송", content: "322장", person: "다같이" },
+          { id: 14, isStand: false, title: "봉헌기도", content: "…………………………", person: "집례자" },
+          { id: 15, isStand: false, title: "교회소식", content: "…………………………", person: "집례자" },
+          { id: 16, isStand: false, title: "성찬예식", content: "보좌 1부: 허정근장로\n2부: 이근섭장로, 조규동장로", person: "집례자" },
+          { id: 17, isStand: true,  title: "찬송", content: "227장", person: "다같이" },
+          { id: 18, isStand: true,  title: "축도", content: "…………………………", person: "김규세 목사" },
+          { id: 19, isStand: true,  title: "폐회", content: "…………………………", person: "다같이" }
+        ],
+        praise: [
+          { id: 1, isStand: false, title: "찬양", content: "나는 순례자", person: "다같이" },
+          { id: 2, isStand: false, title: "기도", content: "…………………………", person: "유병무 권사" },
+          { id: 3, isStand: false, title: "성경봉독", content: "마태복음 20장 6-7절", person: "집례자" },
+          { id: 4, isStand: false, title: "설교", content: "\" 천국을 누리는 법 \"", person: "집례자" },
+          { id: 5, isStand: false, title: "축도", content: "…………………………", person: "담임목사" }
+        ],
+        wed: [
+          { id: 1, isStand: false, title: "찬송", content: "496장", person: "다같이" },
+          { id: 2, isStand: false, title: "기도", content: "…………………………", person: "현숙자 권사" },
+          { id: 3, isStand: false, title: "성경봉독", content: "열왕기상 18장 41-46절", person: "집례자" },
+          { id: 4, isStand: false, title: "특별찬양", content: "…………………………", person: "용현고풍속" },
+          { id: 5, isStand: false, title: "설교", content: "\" 하나님의 신호 \"", person: "집례자" },
+          { id: 6, isStand: false, title: "찬송", content: "할 수 있다 하신 이", person: "다같이" },
+          { id: 7, isStand: false, title: "축도", content: "…………………………", person: "집례자" }
+        ],
+        news: [
+          { id: 1, isStand: false, title: "예배 안내", content: "현장 예배 및 온라인 생중계가 함께 드려집니다.", person: "교회" },
+          { id: 2, isStand: false, title: "모임 소식", content: "각 기관별 남/여선교회 모임이 있습니다.", person: "교회" }
+        ]
+      }
+    };
+
+    // 탭 전환
+    function switchTab(tab) {
+      currentTab = tab;
+      var tabs = ['day', 'praise', 'wed', 'news'];
+      for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        var btn = document.getElementById('tab-' + t);
+        if (btn) {
+          if (t === tab) {
+            btn.className = "flex-1 py-3.5 border-b-2 border-blue-600 font-bold text-blue-600";
+          } else {
+            btn.className = "flex-1 py-3.5 border-b-2 border-transparent text-gray-500";
+          }
+        }
+      }
+      render();
+    }
+
+    // 관리자 암호 확인
+    function handleEditAuth() {
+      if (isEditMode) {
+        toggleEditMode(false);
+      } else {
+        var pin = prompt("비밀번호 4자리를 입력하세요:");
+        if (pin === SECRET_PIN) {
+          toggleEditMode(true);
+        } else if (pin !== null) {
+          alert("비밀번호가 올바르지 않습니다.");
+        }
+      }
+    }
+
+    // 편집 모드 토글
+    function toggleEditMode(enable) {
+      isEditMode = enable;
+      document.getElementById('editBtnText').innerText = isEditMode ? "편집 완료" : "관리자";
+      document.getElementById('lockIcon').className = isEditMode ? "fa-solid fa-unlock" : "fa-solid fa-lock";
+      
+      var adminPanel = document.getElementById('adminPanel');
+      var addBtn = document.getElementById('addBtn');
+      
+      if (isEditMode) {
+        adminPanel.classList.remove('hidden');
+        addBtn.classList.remove('hidden');
+      } else {
+        adminPanel.classList.add('hidden');
+        addBtn.classList.add('hidden');
+      }
+      render();
+    }
+
+    // 화면 그리기
+    function render() {
+      var leaderContainer = document.getElementById('leaderInfoContainer');
+      var leaders = mainData.leaders || {};
+      var data = mainData.data || {};
+
+      if (currentTab === 'news') {
+        leaderContainer.style.display = 'none';
+      } else {
+        leaderContainer.style.display = 'block';
+        if (isEditMode) {
+          leaderContainer.innerHTML = 
+            '<div class="flex items-center justify-end gap-2 bg-amber-50 p-2 rounded border border-amber-200 my-1">' +
+              '<span class="font-bold text-amber-900">집례자 이름:</span>' +
+              '<input type="text" value="' + (leaders[currentTab] || '') + '" onchange="updateLeader(this.value)" class="p-1 border rounded text-xs w-36 text-right font-medium">' +
+            '</div>';
+        } else {
+          leaderContainer.innerHTML = '집례: ' + (leaders[currentTab] || '');
+        }
+      }
+
+      var listEl = document.getElementById('worshipList');
+      listEl.innerHTML = '';
+      var currentList = data[currentTab] || [];
+
+      for (var index = 0; index < currentList.length; index++) {
+        (function(i) {
+          var item = currentList[i];
+          var itemEl = document.createElement('div');
+
+          if (isEditMode) {
+            itemEl.className = "p-3 bg-amber-50/50 my-2 rounded-lg border border-amber-200 space-y-2 text-xs";
+            itemEl.innerHTML = 
+              '<div class="flex items-center justify-between gap-2">' +
+                '<label class="flex items-center gap-1 font-bold text-amber-900 cursor-pointer">' +
+                  '<input type="checkbox" ' + (item.isStand ? 'checked' : '') + ' onchange="updateItem(' + i + ', \'isStand\', this.checked)"> ※ 일어섬' +
+                '</label>' +
+                '<div class="flex gap-1">' +
+                  '<button type="button" onclick="moveItem(' + i + ', -1)" class="px-2 py-1 bg-white border rounded">▲</button>' +
+                  '<button type="button" onclick="moveItem(' + i + ', 1)" class="px-2 py-1 bg-white border rounded">▼</button>' +
+                  '<button type="button" onclick="deleteItem(' + i + ')" class="px-2 py-1 bg-red-500 text-white rounded">삭제</button>' +
+                '</div>' +
+              '</div>' +
+              '<div class="grid grid-cols-3 gap-2">' +
+                '<input type="text" value="' + (item.title || '') + '" onchange="updateItem(' + i + ', \'title\', this.value)" placeholder="순서명" class="p-1.5 border rounded font-bold w-full">' +
+                '<textarea onchange="updateItem(' + i + ', \'content\', this.value)" placeholder="내용" class="p-1.5 border rounded w-full h-12">' + (item.content || '') + '</textarea>' +
+                '<textarea onchange="updateItem(' + i + ', \'person\', this.value)" placeholder="담당자" class="p-1.5 border rounded w-full h-12">' + (item.person || '') + '</textarea>' +
+              '</div>';
+          } else {
+            itemEl.className = "flex items-center justify-between py-3 text-sm";
+            itemEl.innerHTML = 
+              '<div class="w-1/3 font-semibold text-gray-800">' + (item.isStand ? '<span class="asterisk">※</span>' : '') + (item.title || '') + '</div>' +
+              '<div class="w-1/3 text-center font-medium text-gray-600 px-1 whitespace-pre-line">' + (item.content || '') + '</div>' +
+              '<div class="w-1/3 text-right text-xs text-gray-500 whitespace-pre-line">' + (item.person || '') + '</div>';
+          }
+          listEl.appendChild(itemEl);
+        })(index);
+      }
+    }
+
+    function updateLeader(val) {
+      mainData.leaders[currentTab] = val;
+      render();
+    }
+
+    function updateItem(index, key, val) {
+      mainData.data[currentTab][index][key] = val;
+      render();
+    }
+
+    function addItem() {
+      if (!mainData.data[currentTab]) mainData.data[currentTab] = [];
+      mainData.data[currentTab].push({
+        id: Date.now(),
+        isStand: false,
+        title: "새 순서",
+        content: "",
+        person: ""
+      });
+      render();
+    }
+
+    function deleteItem(index) {
+      if (confirm("이 순서를 삭제하시겠습니까?")) {
+        mainData.data[currentTab].splice(index, 1);
+        render();
+      }
+    }
+
+    function moveItem(index, dir) {
+      var target = index + dir;
+      var list = mainData.data[currentTab];
+      if (target < 0 || target >= list.length) return;
+      var temp = list[index];
+      list[index] = list[target];
+      list[target] = temp;
+      render();
+    }
+
+    function downloadGithubData() {
+      var jsonStr = JSON.stringify(mainData, null, 2);
+      var blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "worship_data.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      alert("worship_data.json 파일이 다운로드되었습니다.");
+    }
+
+    // 서버 파일 동기화 (실패하더라도 기존 화면 유지)
+    function loadServerData() {
+      fetch('./worship_data.json?v=' + Date.now())
+        .then(function(res) {
+          if (res.ok) return res.json();
+          throw new Error('No file');
+        })
+        .then(function(loaded) {
+          if (loaded && loaded.data) {
+            if (loaded.leaders) mainData.leaders = loaded.leaders;
+            if (loaded.data.day && loaded.data.day.length > 0) mainData.data.day = loaded.data.day;
+            if (loaded.data.praise && loaded.data.praise.length > 0) mainData.data.praise = loaded.data.praise;
+            if (loaded.data.wed && loaded.data.wed.length > 0) mainData.data.wed = loaded.data.wed;
+            if (loaded.data.news && loaded.data.news.length > 0) mainData.data.news = loaded.data.news;
+          }
+          render();
+        })
+        .catch(function(e) {
+          render();
+        });
+    }
+
+    window.onload = function() {
+      loadServerData();
+    };
+  </script>
+</body>
+</html>
