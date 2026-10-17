@@ -1,0 +1,248 @@
+{
+  "leaders": {
+    "day": "김규세 목사",
+    "praise": "김규세 목사",
+    "wed": ""
+  },
+  "data": {
+    "day": [
+      {
+        "id": 1,
+        "isStand": false,
+        "title": "조용한기도",
+        "content": "…………………………",
+        "person": "글로리아찬양대"
+      },
+      {
+        "id": 2,
+        "isStand": false,
+        "title": "예배의부름",
+        "content": "시 99:1-2",
+        "person": "집례자"
+      },
+      {
+        "id": 3,
+        "isStand": true,
+        "title": "경배찬송",
+        "content": "23장",
+        "person": "다같이"
+      },
+      {
+        "id": 4,
+        "isStand": true,
+        "title": "신앙고백",
+        "content": "사도신경",
+        "person": "다같이"
+      },
+      {
+        "id": 5,
+        "isStand": true,
+        "title": "교독문",
+        "content": "40번",
+        "person": "다같이"
+      },
+      {
+        "id": 6,
+        "isStand": true,
+        "title": "찬송",
+        "content": "84장",
+        "person": "다같이"
+      },
+      {
+        "id": 7,
+        "isStand": false,
+        "title": "기도",
+        "content": "…………………………",
+        "person": "1부 / 신기원장로\n2부 / 이근섭장로"
+      },
+      {
+        "id": 8,
+        "isStand": false,
+        "title": "응답송",
+        "content": "…………………………",
+        "person": "글로리아찬양대"
+      },
+      {
+        "id": 9,
+        "isStand": false,
+        "title": "성경봉독",
+        "content": "사도행전 2장 1-12절",
+        "person": "집례자"
+      },
+      {
+        "id": 10,
+        "isStand": false,
+        "title": "찬양",
+        "content": "…………………………",
+        "person": "글로리아찬양대"
+      },
+      {
+        "id": 11,
+        "isStand": false,
+        "title": "설교",
+        "content": "\"성령이 역사하는 대로\"",
+        "person": "김규세 목사"
+      },
+      {
+        "id": 12,
+        "isStand": false,
+        "title": "기도",
+        "content": "…………………………",
+        "person": "집례자"
+      },
+      {
+        "id": 13,
+        "isStand": false,
+        "title": "헌금찬송",
+        "content": "495장",
+        "person": "다같이"
+      },
+      {
+        "id": 14,
+        "isStand": false,
+        "title": "봉헌기도",
+        "content": "…………………………",
+        "person": "집례자"
+      },
+      {
+        "id": 15,
+        "isStand": false,
+        "title": "교회소식",
+        "content": "…………………………",
+        "person": "집례자"
+      },
+      {
+        "id": 16,
+        "isStand": false,
+        "title": "새신자소개",
+        "content": "…………………………",
+        "person": "집례자"
+      },
+      {
+        "id": 17,
+        "isStand": true,
+        "title": "찬송",
+        "content": "620장",
+        "person": "다같이"
+      },
+      {
+        "id": 18,
+        "isStand": true,
+        "title": "축도",
+        "content": "…………………………",
+        "person": "김규세 목사"
+      },
+      {
+        "id": 19,
+        "isStand": true,
+        "title": "폐회",
+        "content": "…………………………",
+        "person": "다같이"
+      }
+    ],
+    "praise": [
+      {
+        "id": 1,
+        "isStand": false,
+        "title": "기도",
+        "content": "…………………………",
+        "person": "유근송 권사"
+      },
+      {
+        "id": 2,
+        "isStand": false,
+        "title": "성경봉독",
+        "content": "마태복음 21장 8-9절",
+        "person": "집례자"
+      },
+      {
+        "id": 3,
+        "isStand": false,
+        "title": "설교",
+        "content": "\" 하나님과 동행하기 \"",
+        "person": "집례자"
+      },
+      {
+        "id": 4,
+        "isStand": false,
+        "title": "찬송",
+        "content": "442장",
+        "person": "다같이"
+      },
+      {
+        "id": 5,
+        "isStand": false,
+        "title": "축도",
+        "content": "…………………………",
+        "person": "담임목사"
+      }
+    ],
+    "wed": [
+      {
+        "id": 1,
+        "isStand": false,
+        "title": "찬송",
+        "content": "430장",
+        "person": "다같이"
+      },
+      {
+        "id": 2,
+        "isStand": false,
+        "title": "기도",
+        "content": "…………………………",
+        "person": "이기쁨 권사"
+      },
+      {
+        "id": 3,
+        "isStand": false,
+        "title": "성경봉독",
+        "content": "…………………………",
+        "person": "이영분 권사"
+      },
+      {
+        "id": 4,
+        "isStand": false,
+        "title": "특별찬양",
+        "content": "…………………………",
+        "person": "음암속"
+      },
+      {
+        "id": 5,
+        "isStand": false,
+        "title": "설교",
+        "content": "…………………………",
+        "person": "이영섭 장로"
+      },
+      {
+        "id": 6,
+        "isStand": false,
+        "title": "찬송",
+        "content": "205장",
+        "person": "다같이"
+      },
+      {
+        "id": 7,
+        "isStand": false,
+        "title": "주기도문",
+        "content": "…………………………",
+        "person": "다같이"
+      }
+    ],
+    "news": [
+      {
+        "id": 1,
+        "isStand": false,
+        "title": "예배 안내",
+        "content": "현장 예배 및 온라인 생중계가 함께 드려집니다.",
+        "person": "교회"
+      },
+      {
+        "id": 2,
+        "isStand": false,
+        "title": "모임 소식",
+        "content": "각 기관별 남/여선교회 모임이 있습니다.",
+        "person": "교회"
+      }
+    ]
+  }
+}
