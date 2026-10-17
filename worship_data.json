@@ -17,14 +17,14 @@
         "id": 2,
         "isStand": false,
         "title": "예배의부름",
-        "content": "시 106:1, 3",
+        "content": "시 99:1-2",
         "person": "집례자"
       },
       {
         "id": 3,
         "isStand": true,
         "title": "경배찬송",
-        "content": "20장",
+        "content": "23장",
         "person": "다같이"
       },
       {
@@ -38,14 +38,14 @@
         "id": 5,
         "isStand": true,
         "title": "교독문",
-        "content": "13번",
+        "content": "40번",
         "person": "다같이"
       },
       {
         "id": 6,
         "isStand": true,
         "title": "찬송",
-        "content": "208장",
+        "content": "84장",
         "person": "다같이"
       },
       {
@@ -53,7 +53,7 @@
         "isStand": false,
         "title": "기도",
         "content": "…………………………",
-        "person": "1부 / 양낙은장로\n2부 / 이영섭장로"
+        "person": "1부 / 신기원장로\n2부 / 이근섭장로"
       },
       {
         "id": 8,
@@ -66,7 +66,7 @@
         "id": 9,
         "isStand": false,
         "title": "성경봉독",
-        "content": "요한일서 2장 1-11절",
+        "content": "사도행전 2장 1-12절",
         "person": "집례자"
       },
       {
@@ -80,7 +80,7 @@
         "id": 11,
         "isStand": false,
         "title": "설교",
-        "content": "\" 믿음에도 발자국이 있습니다 \"",
+        "content": "\" 성령이 역사하는 대로 \"",
         "person": "김규세 목사"
       },
       {
@@ -94,7 +94,7 @@
         "id": 13,
         "isStand": false,
         "title": "헌금찬송",
-        "content": "246장",
+        "content": "495장",
         "person": "다같이"
       },
       {
@@ -141,57 +141,36 @@
       }
     ],
     "praise": [
-      {
+     {
         "id": 1,
         "isStand": false,
-        "title": "찬양",
-        "content": "312장",
-        "person": "다같이"
+        "title": "기도",
+        "content": "…………………………",
+        "person": "유근송 권사"
       },
       {
         "id": 2,
         "isStand": false,
-        "title": "기도",
-        "content": "…………………………",
-        "person": "김정연 집사"
+        "title": "성경봉독",
+        "content": "마태복음 21장 8-9절",
+        "person": "집례자"
       },
       {
         "id": 3,
         "isStand": false,
-        "title": "성경봉독",
-        "content": "마태복음 20장 32-34절",
-        "person": "유수동 권사"
-      },
-      {
-        "id": 4,
-        "isStand": false,
-        "title": "특별찬양",
-        "content": "…………………………",
-        "person": "3남선교회원"
-      },
-      {
-        "id": 5,
-        "isStand": false,
         "title": "설교",
-        "content": "\" 너희에게 무엇을 해 주기를 원하느냐? \"",
+        "content": "하나님과 동행하기",
         "person": "집례자"
       },
       {
-        "id": 6,
-        "isStand": false,
-        "title": "찬양",
-        "content": "시편 40편",
+         "id": 4,
+        "isStand": true,
+        "title": "찬송",
+        "content": "442장",
         "person": "다같이"
       },
       {
-        "id": 7,
-        "isStand": false,
-        "title": "봉헌기도",
-        "content": "…………………………", 
-        "person": "집례자"
-      },
-      {
-        "id": 6,
+        "id": 5,
         "isStand": false,
         "title": "축도",
         "content": "…………………………",
@@ -203,7 +182,7 @@
         "id": 1,
         "isStand": false,
         "title": "찬송",
-        "content": "523장",
+        "content": "430장",
         "person": "다같이"
       },
       {
@@ -211,42 +190,42 @@
         "isStand": false,
         "title": "기도",
         "content": "…………………………",
-        "person": "안상회 권사"
+        "person": "이기쁨 권사"
       },
       {
         "id": 3,
         "isStand": false,
         "title": "성경봉독",
-        "content": "사도행전 1장 8절",
-        "person": "집례자"
+        "content": "…………………………",
+        "person": "이영분권사"
       },
       {
         "id": 4,
         "isStand": false,
         "title": "특별찬양",
         "content": "…………………………",
-        "person": "원벌해미속"
+        "person": "음암속"
       },
       {
         "id": 5,
         "isStand": false,
         "title": "설교",
-        "content": "\" 때와 시기는 알것 없다 \"",
-        "person": "집례자"
+        "content": "…………………………",
+        "person": "이영섭 장로"
       },
       {
         "id": 6,
         "isStand": false,
         "title": "찬송",
-        "content": "겟세마네 동산에서",
+        "content": "205장",
         "person": "다같이"
       },
       {
         "id": 7,
         "isStand": false,
-        "title": "축도",
+        "title": "주기도문",
         "content": "…………………………",
-        "person": "집례자"
+        "person": "다같이"
       }
     ],
     "news": [
